@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.cw1601.MainController"
+            prefHeight="600.0" prefWidth="1100.0">
+    <top>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Enter full path to the CSV tax transaction file:"/>
+                <TextField fx:id="filePathInput" prefWidth="300"/>
+                <Button fx:id="browseBtn" text="Browse"/>
+                <Button fx:id="importBtn" text="Import CSV"/>
+            </HBox>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Button fx:id="validateBtn" text="Validate"/>
+                <Button fx:id="deleteInvalidBtn" text="Delete Invalid"/>
+                <Button fx:id="deleteZeroProfitBtn" text="Delete Zero Profit"/>
+                <TextField fx:id="taxRateInput" promptText="Tax %"/>
+                <Button fx:id="calcTaxBtn" text="Calculate Final Tax"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn fx:id="colItem" text="Item Code"/>
+                <TableColumn fx:id="colInternal" text="Internal Price"/>
+                <TableColumn fx:id="colSale" text="Sale Price"/>
+                <TableColumn fx:id="colDiscount" text="Discount"/>
+                <TableColumn fx:id="colQty" text="Quantity"/>
+                <TableColumn fx:id="colChecksum" text="Checksum"/>
+                <TableColumn fx:id="colValid" text="Valid"/>
+                <TableColumn fx:id="colProfit" text="Profit"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+            <Label fx:id="summaryLabel"/>
+        </HBox>
+    </bottom>
+</BorderPane>
