@@ -45,7 +45,7 @@ public class MainController implements Initializable {
         table.setEditable(true);
 
         // Configure table columns
-        colItem.setCellValueFactory(new PropertyValueFactory<>("itemCode"));
+        colItem.setCellValueFactory(new PropertyValueFactory<>("itemCodedddd"));
         colItem.setCellFactory(TextFieldTableCell.forTableColumn());
         colItem.setOnEditCommit(event -> {
             TransactionRecord record = event.getRowValue();
