@@ -33,6 +33,7 @@ public class MainController implements Initializable {
     @FXML private TableColumn<TransactionRecord, Integer> colChecksum;
     @FXML private TableColumn<TransactionRecord, Boolean> colValid;
     @FXML private TableColumn<TransactionRecord, Double> colProfit;
+    @FXML private TableColumn<TransactionRecord, Double> colLineTotal;
     @FXML private Label summaryLabel;
 
     @Override
@@ -44,7 +45,6 @@ public class MainController implements Initializable {
     private void setupTable() {
         table.setEditable(true);
 
-        // Configure table columns
         colItem.setCellValueFactory(new PropertyValueFactory<>("itemCode"));
         colItem.setCellFactory(TextFieldTableCell.forTableColumn());
         colItem.setOnEditCommit(event -> {
@@ -98,6 +98,7 @@ public class MainController implements Initializable {
         colChecksum.setCellValueFactory(new PropertyValueFactory<>("checksum"));
         colValid.setCellValueFactory(new PropertyValueFactory<>("valid"));
         colProfit.setCellValueFactory(new PropertyValueFactory<>("profit"));
+        colLineTotal.setCellValueFactory(new PropertyValueFactory<>("lineTotal"));
     }
 
     private void setupButtonHandlers() {

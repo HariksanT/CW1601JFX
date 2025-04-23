@@ -9,6 +9,7 @@ public class TransactionRecord {
     private int checksum;
     private boolean valid;
     private double profit;
+    private double lineTotal;
 
     public TransactionRecord(String itemCode, double internalPrice, double discount, double salePrice, int quantity, int checksum) {
         this.itemCode = itemCode;
@@ -19,12 +20,15 @@ public class TransactionRecord {
         this.checksum = checksum;
         this.valid = false;
         calculateProfit();
+        calculateLineTotal();
     }
 
     public void calculateProfit() {
-        // Corrected profit calculation based on the requirement:
-
         this.profit = (internalPrice * quantity) - (salePrice * quantity - discount);
+    }
+
+    public void calculateLineTotal() {
+        this.lineTotal = (salePrice * quantity) - discount;
     }
 
     public int calculateChecksum() {
@@ -32,8 +36,7 @@ public class TransactionRecord {
         int lower = (int) itemCode.chars().filter(Character::isLowerCase).count();
         int numbers = (int) itemCode.chars().filter(Character::isDigit).count();
 
-        // Format like Python: 1 decimal place floats
-        String formatted = String.format("%.1f%.1f%.1f%d", internalPrice, discount, salePrice, quantity);
+        String formatted = String.format("%.1f%.1f%.1f%.1f%d", internalPrice, discount, salePrice, lineTotal, quantity);
         int digits = (int) formatted.chars().filter(c -> Character.isDigit(c) || c == '.').count();
 
         return upper + lower + numbers + digits;
@@ -42,17 +45,14 @@ public class TransactionRecord {
     public void validate() {
         valid = true;
 
-        // Check if the checksum matches
         if (checksum != calculateChecksum()) {
             valid = false;
         }
 
-        // Check if the item code contains only valid characters (letters, numbers, underscore)
         if (!itemCode.matches("[A-Za-z0-9_]+")) {
             valid = false;
         }
 
-        // Check if prices are non-negative
         if (internalPrice < 0 || salePrice < 0) {
             valid = false;
         }
@@ -69,6 +69,7 @@ public class TransactionRecord {
     public void setInternalPrice(double internalPrice) {
         this.internalPrice = internalPrice;
         calculateProfit();
+        calculateLineTotal();
         validate();
     }
 
@@ -76,6 +77,7 @@ public class TransactionRecord {
     public void setDiscount(double discount) {
         this.discount = discount;
         calculateProfit();
+        calculateLineTotal();
         validate();
     }
 
@@ -83,6 +85,7 @@ public class TransactionRecord {
     public void setSalePrice(double salePrice) {
         this.salePrice = salePrice;
         calculateProfit();
+        calculateLineTotal();
         validate();
     }
 
@@ -90,6 +93,7 @@ public class TransactionRecord {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
         calculateProfit();
+        calculateLineTotal();
         validate();
     }
 
@@ -105,4 +109,5 @@ public class TransactionRecord {
 
     public boolean isValid() { return valid; }
     public double getProfit() { return profit; }
+    public double getLineTotal() { return lineTotal; }
 }
