@@ -120,7 +120,7 @@ public class MainController implements Initializable {
                         ", Valid records: " + controller.getValidRecords() +
                         ", Invalid records: " + controller.getInvalidRecords());
             } else {
-                summaryLabel.setText("Failed to import file. Check console for details.");
+                summaryLabel.setText("Failed to import file. Browse and choose relavant file");
             }
         });
 
