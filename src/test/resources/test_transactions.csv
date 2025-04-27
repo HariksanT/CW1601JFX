@@ -1,0 +1,4 @@
+bill_number,date,item_code,internal_price,discount,sale_price,quantity,line_total,checksum
+BILL0001,2025-04-27 01:07:23,apple_01,500.0,0.2,1000.0,3,2400.0,28
+BILL0001,2025-04-27 01:07:23,vanilla_003,400.0,0.1,600.0,2,1080.0,30
+BILL0001,2025-04-27 01:07:23,chocolate_006,800.0,0.4,1500.0,7,6300.0,33

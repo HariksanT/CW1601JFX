@@ -8,7 +8,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.FileChooser;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -17,23 +16,13 @@ public class MainController implements Initializable {
     private TaxSystemController controller = new TaxSystemController();
 
     @FXML private TextField filePathInput;
-    @FXML private Button browseBtn;
-    @FXML private Button importBtn;
-    @FXML private Button validateBtn;
-    @FXML private Button deleteInvalidBtn;
-    @FXML private Button deleteZeroProfitBtn;
+    @FXML private Button browseBtn, importBtn, validateBtn, deleteInvalidBtn, deleteZeroProfitBtn, calcProfitBtn, calcTaxBtn;
     @FXML private TextField taxRateInput;
-    @FXML private Button calcTaxBtn;
     @FXML private TableView<TransactionRecord> table;
     @FXML private TableColumn<TransactionRecord, String> colItem;
-    @FXML private TableColumn<TransactionRecord, Double> colInternal;
-    @FXML private TableColumn<TransactionRecord, Double> colSale;
-    @FXML private TableColumn<TransactionRecord, Double> colDiscount;
-    @FXML private TableColumn<TransactionRecord, Integer> colQty;
-    @FXML private TableColumn<TransactionRecord, Integer> colChecksum;
+    @FXML private TableColumn<TransactionRecord, Double> colInternal, colSale, colDiscount, colLineTotal, colProfit;
+    @FXML private TableColumn<TransactionRecord, Integer> colQty, colChecksum;
     @FXML private TableColumn<TransactionRecord, Boolean> colValid;
-    @FXML private TableColumn<TransactionRecord, Double> colProfit;
-    @FXML private TableColumn<TransactionRecord, Double> colLineTotal;
     @FXML private Label summaryLabel;
 
     @Override
@@ -42,57 +31,65 @@ public class MainController implements Initializable {
         setupButtonHandlers();
     }
 
+    private class PercentageDoubleStringConverter extends DoubleStringConverter {
+        @Override
+        public String toString(Double value) {
+            return (value == null) ? "" : String.format("%.0f%%", value * 100);
+        }
+
+        @Override
+        public Double fromString(String value) {
+            try {
+                String cleaned = value.replace("%", "").trim();
+                double val = Double.parseDouble(cleaned);
+                return val >= 1 ? val / 100 : val;
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        }
+    }
+
     private void setupTable() {
         table.setEditable(true);
 
         colItem.setCellValueFactory(new PropertyValueFactory<>("itemCode"));
         colItem.setCellFactory(TextFieldTableCell.forTableColumn());
         colItem.setOnEditCommit(event -> {
-            TransactionRecord record = event.getRowValue();
-            record.setItemCode(event.getNewValue());
-            controller.updateRecord(record);
-            table.refresh();
-            updateSummaryLabel();
+            event.getRowValue().setItemCode(event.getNewValue());
+            controller.updateRecord(event.getRowValue());
+            refreshTable();
         });
 
         colInternal.setCellValueFactory(new PropertyValueFactory<>("internalPrice"));
         colInternal.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         colInternal.setOnEditCommit(event -> {
-            TransactionRecord record = event.getRowValue();
-            record.setInternalPrice(event.getNewValue());
-            controller.updateRecord(record);
-            table.refresh();
-            updateSummaryLabel();
+            event.getRowValue().setInternalPrice(event.getNewValue());
+            controller.updateRecord(event.getRowValue());
+            refreshTable();
         });
 
         colSale.setCellValueFactory(new PropertyValueFactory<>("salePrice"));
         colSale.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         colSale.setOnEditCommit(event -> {
-            TransactionRecord record = event.getRowValue();
-            record.setSalePrice(event.getNewValue());
-            controller.updateRecord(record);
-            table.refresh();
-            updateSummaryLabel();
+            event.getRowValue().setSalePrice(event.getNewValue());
+            controller.updateRecord(event.getRowValue());
+            refreshTable();
         });
 
         colDiscount.setCellValueFactory(new PropertyValueFactory<>("discount"));
-        colDiscount.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colDiscount.setCellFactory(TextFieldTableCell.forTableColumn(new PercentageDoubleStringConverter()));
         colDiscount.setOnEditCommit(event -> {
-            TransactionRecord record = event.getRowValue();
-            record.setDiscount(event.getNewValue());
-            controller.updateRecord(record);
-            table.refresh();
-            updateSummaryLabel();
+            event.getRowValue().setDiscount(event.getNewValue());
+            controller.updateRecord(event.getRowValue());
+            refreshTable();
         });
 
         colQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         colQty.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         colQty.setOnEditCommit(event -> {
-            TransactionRecord record = event.getRowValue();
-            record.setQuantity(event.getNewValue());
-            controller.updateRecord(record);
-            table.refresh();
-            updateSummaryLabel();
+            event.getRowValue().setQuantity(event.getNewValue());
+            controller.updateRecord(event.getRowValue());
+            refreshTable();
         });
 
         colChecksum.setCellValueFactory(new PropertyValueFactory<>("checksum"));
@@ -104,67 +101,74 @@ public class MainController implements Initializable {
     private void setupButtonHandlers() {
         browseBtn.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Select Tax Transaction CSV File");
-            File selectedFile = fileChooser.showOpenDialog(browseBtn.getScene().getWindow());
-            if (selectedFile != null) {
-                filePathInput.setText(selectedFile.getAbsolutePath());
-            }
+            fileChooser.setTitle("Select Tax Transaction CSV");
+            File file = fileChooser.showOpenDialog(browseBtn.getScene().getWindow());
+            if (file != null) filePathInput.setText(file.getAbsolutePath());
         });
 
         importBtn.setOnAction(e -> {
-            boolean success = controller.importCSV(filePathInput.getText());
-            if (success) {
+            if (controller.importCSV(filePathInput.getText())) {
                 table.setItems(controller.getTransactions());
-                updateSummaryLabel();
-                summaryLabel.setText("File imported successfully. Total records: " +
-                        controller.getTotalRecords() +
-                        ", Valid records: " + controller.getValidRecords() +
-                        ", Invalid records: " + controller.getInvalidRecords());
+                updateSummary();
             } else {
-                summaryLabel.setText("Failed to import file. Browse and choose relavant file");
+                showAlert("Import Error", "Failed to import CSV file");
             }
         });
 
         validateBtn.setOnAction(e -> {
             controller.validateAllRecords();
-            table.refresh();
-            updateSummaryLabel();
-            summaryLabel.setText("Validation complete. Valid records: " +
-                    controller.getValidRecords() +
-                    ", Invalid records: " + controller.getInvalidRecords());
+            refreshTable();
+            updateSummary();
         });
 
         deleteInvalidBtn.setOnAction(e -> {
             controller.deleteInvalidRecords();
-            table.refresh();
-            updateSummaryLabel();
-            summaryLabel.setText("Invalid records deleted. Total records: " +
-                    controller.getTotalRecords() +
-                    ", Valid records: " + controller.getValidRecords());
+            refreshTable();
+            updateSummary();
         });
 
         deleteZeroProfitBtn.setOnAction(e -> {
             controller.deleteZeroProfitRecords();
-            table.refresh();
-            updateSummaryLabel();
-            summaryLabel.setText("Zero profit records deleted. Total records: " +
-                    controller.getTotalRecords());
+            refreshTable();
+            updateSummary();
         });
 
         calcTaxBtn.setOnAction(e -> {
             try {
                 double taxRate = Double.parseDouble(taxRateInput.getText());
                 double tax = controller.calculateFinalTax(taxRate);
-                summaryLabel.setText("Final Tax: Rs. " + String.format("%.2f", tax));
-            } catch (Exception ex) {
-                summaryLabel.setText("Invalid tax rate.");
+                summaryLabel.setText(String.format("Tax Due: Rs.%.2f", tax));
+            } catch (NumberFormatException ex) {
+                showAlert("Input Error", "Invalid tax rate percentage");
             }
         });
     }
 
-    private void updateSummaryLabel() {
-        summaryLabel.setText("Total records: " + controller.getTotalRecords() +
-                ", Valid records: " + controller.getValidRecords() +
-                ", Invalid records: " + controller.getInvalidRecords());
+    @FXML
+    private void handleCalcProfit() {
+        double profit = controller.calculateTotalProfit();
+        summaryLabel.setText(String.format("Total Profit: Rs.%.2f", profit));
+    }
+
+    private void refreshTable() {
+        table.refresh();
+        updateSummary();
+    }
+
+    private void updateSummary() {
+        summaryLabel.setText(String.format(
+                "Total: %d | Valid: %d | Invalid: %d",
+                controller.getTotalRecords(),
+                controller.getValidRecords(),
+                controller.getInvalidRecords()
+        ));
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
