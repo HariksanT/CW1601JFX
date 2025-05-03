@@ -71,6 +71,8 @@ public class TaxSystemController {
 
     public void updateRecord(TransactionRecord record) {
         record.recalculateChecksum();
+        record.calculateProfit();
+        record.calculateLineTotal();
         validateAllRecords();
     }
 

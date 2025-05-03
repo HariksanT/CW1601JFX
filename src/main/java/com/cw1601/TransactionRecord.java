@@ -37,6 +37,10 @@ public class TransactionRecord {
         return capital + simple + numbers + decimals;
     }
 
+    public void calculateLineTotal() {
+        this.lineTotal = salePrice * quantity * (1 - discount);
+    }
+
     public void validate() {
         valid = true;
         invalidReason = "";
