@@ -52,10 +52,10 @@ public class MainController implements Initializable {
     private void setupTable() {
         table.setEditable(true);
 
-        colItem.setCellValueFactory(new PropertyValueFactory<>("itemCode"));
-        colItem.setCellFactory(TextFieldTableCell.forTableColumn());
-        colItem.setOnEditCommit(event -> {
-            event.getRowValue().setItemCode(event.getNewValue());
+        colItem.setCellValueFactory(new PropertyValueFactory<>("itemCode")); //what to display
+        colItem.setCellFactory(TextFieldTableCell.forTableColumn()); //open textfield while editing
+        colItem.setOnEditCommit(event -> { //during edit event
+            event.getRowValue().setItemCode(event.getNewValue()); //set new value
             controller.updateRecord(event.getRowValue());
             refreshTable();
         });
